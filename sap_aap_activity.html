@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Segment & Angle Addition Postulate Practice</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    .card { border: 2px solid #444; border-radius: 12px; padding: 20px; max-width: 700px; margin: auto; box-shadow: 2px 2px 8px #aaa; }
+    h1 { margin-bottom: 5px; }
+    #problem { font-size: 1.2em; margin: 20px 0; }
+    input, button, select { padding: 10px; font-size: 1em; margin: 5px; }
+    #feedback { font-weight: bold; margin-top: 15px; }
+    #solution { margin-top: 15px; font-style: italic; color: navy; display: none; }
+    #score { margin: 15px; font-weight: bold; }
+    #classResults { margin-top: 20px; text-align: left; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #666; padding: 6px; text-align: center; }
+    svg { margin: 10px auto; display: block; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Segment & Angle Addition Postulate</h1>
+    
+    <p>
+      Student Name: <input id="studentName" placeholder="Enter your name">
+    </p>
+
+    <p>
+      <b>Mode:</b>
+      <select id="mode">
+        <option value="segment">Segment Addition</option>
+        <option value="angle">Angle Addition</option>
+      </select>
+      <b>Difficulty:</b>
+      <select id="difficulty">
+        <option value="easy">Easy (Numbers)</option>
+        <option value="hard">Hard (Algebra)</option>
+      </select>
+    </p>
+
+    <div id="problem"></div>
+    <svg id="diagram" width="300" height="140"></svg>
+    
+    <div id="inputs">
+      <p id="xInputWrapper" style="display:none;">
+        Solve for x: <input id="xAnswer" placeholder="x = ?">
+      </p>
+      <p>
+        Final measure: <input id="answer" placeholder="Enter measure">
+        <button onclick="checkAnswer()">Check</button>
+      </p>
+    </div>
+    
+    <p id="feedback"></p>
+    <button onclick="showSolution()">Show Step-by-Step Solution</button>
+    <p id="solution"></p>
+    <button onclick="newProblem()">New Problem</button>
+    
+    <p id="score">Score: 0 correct out of 0 (0%)</p>
+
+    <hr>
+    <button onclick="saveScore()">💾 Save My Score</button>
+    <button onclick="resetScore()">🔄 Reset My Score</button>
+    <button onclick="downloadCSV()">⬇️ Download Class Results (CSV)</button>
+
+    <div id="classResults">
+      <h3>Class Results</h3>
+      <table id="resultsTable">
+        <tr><th>Name</th><th>Correct</th><th>Total</th><th>%</th><th>Timestamp</th></tr>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let correctAnswer = null;
+    let xValue = null;
+    let solutionText = "";
+    let needsX = false;
+
+    let totalAttempted = 0;
+    let totalCorrect = 0;
+
+    let classData = [];
+
+    function newProblem() {
+      const mode = document.getElementById('mode').value;
+      const difficulty = document.getElementById('difficulty').value;
+      const problemEl = document.getElementById('problem');
+      const svg = document.getElementById('diagram');
+      document.getElementById('feedback').textContent = '';
+      document.getElementById('solution').style.display = 'none';
+      document.getElementById('answer').value = '';
+      document.getElementById('xAnswer').value = '';
+      document.getElementById('xInputWrapper').style.display = 'none';
+      svg.innerHTML = '';
+      solutionText = "";
+      needsX = false;
+
+      if (mode === 'segment') {
+        if (difficulty === 'easy') {
+          let AB = Math.floor(Math.random() * 10) + 2;
+          let BC = Math.floor(Math.random() * 10) + 2;
+          correctAnswer = AB + BC;
+          problemEl.textContent = `Point B is between A and C. If AB = ${AB} and BC = ${BC}, find AC.`;
+          drawSegment(svg);
+          solutionText = `AB + BC = AC → ${AB} + ${BC} = ${AB+BC}.`;
+        } else {
+          let x = Math.floor(Math.random() * 5) + 2;
+          let ABexpr = `2x + 3`;
+          let BCexpr = `x + 1`;
+          let AB = 2*x + 3;
+          let BC = x + 1;
+          let AC = AB + BC;
+          xValue = x;
+          correctAnswer = AB;
+          problemEl.textContent = `Point B is between A and C. If AB = ${ABexpr}, BC = ${BCexpr}, and AC = ${AC}, find x and then find AB.`;
+          drawSegment(svg);
+          solutionText = `(2x + 3) + (x + 1) = ${AC} → 3x + 4 = ${AC} → x = ${x}. Then AB = ${AB}.`;
+          needsX = true;
+        }
+      } else {
+        if (difficulty === 'easy') {
+          let angle1 = Math.floor(Math.random() * 40) + 20;
+          let angle2 = Math.floor(Math.random() * 40) + 20;
+          correctAnswer = angle1 + angle2;
+          problemEl.textContent = `Ray BD lies in the interior of ∠ABC. If ∠ABD = ${angle1}° and ∠DBC = ${angle2}°, find ∠ABC.`;
+          drawAngle(svg);
+          solutionText = `${angle1} + ${angle2} = ${angle1+angle2}°.`;
+        } else {
+          let x = Math.floor(Math.random() * 5) + 2;
+          let expr1 = `x + 10`;
+          let expr2 = `2x – 4`;
+          let angle1 = x + 10;
+          let angle2 = 2*x - 4;
+          let total = angle1 + angle2;
+          xValue = x;
+          correctAnswer = angle1;
+          problemEl.textContent = `Ray BD lies in the interior of ∠ABC. If ∠ABD = ${expr1}, ∠DBC = ${expr2}, and ∠ABC = ${total}, find x and then ∠ABD.`;
+          drawAngle(svg);
+          solutionText = `(x + 10) + (2x – 4) = ${total} → 3x + 6 = ${total} → x = ${x}. Then ∠ABD = ${angle1}°.`;
+          needsX = true;
+        }
+      }
+
+      if (needsX) document.getElementById('xInputWrapper').style.display = 'block';
+    }
+
+    function checkAnswer() {
+      const feedbackEl = document.getElementById('feedback');
+      totalAttempted++;
+
+      if (needsX) {
+        let userX = parseFloat(document.getElementById('xAnswer').value);
+        let userMeasure = parseFloat(document.getElementById('answer').value);
+
+        if (isNaN(userX) || isNaN(userMeasure)) {
+          feedbackEl.textContent = "Enter both x and the final measure.";
+          feedbackEl.style.color = "black";
+          totalAttempted--; 
+          return;
+        }
+
+        if (userX === xValue && Math.abs(userMeasure - correctAnswer) < 0.01) {
+          feedbackEl.textContent = "✅ Correct!";
+          feedbackEl.style.color = "green";
+          totalCorrect++;
+        } else {
+          feedbackEl.textContent = `❌ Incorrect. x = ${xValue}, final = ${correctAnswer}.`;
+          feedbackEl.style.color = "red";
+        }
+      } else {
+        let userAns = parseFloat(document.getElementById('answer').value);
+        if (isNaN(userAns)) {
+          feedbackEl.textContent = "Enter a number.";
+          feedbackEl.style.color = "black";
+          totalAttempted--;
+          return;
+        }
+
+        if (Math.abs(userAns - correctAnswer) < 0.01) {
+          feedbackEl.textContent = "✅ Correct!";
+          feedbackEl.style.color = "green";
+          totalCorrect++;
+        } else {
+          feedbackEl.textContent = `❌ Incorrect. Correct = ${correctAnswer}.`;
+          feedbackEl.style.color = "red";
+        }
+      }
+      updateScore();
+    }
+
+    function showSolution() {
+      const sol = document.getElementById('solution');
+      sol.style.display = 'block';
+      sol.textContent = "📘 Solution: " + solutionText;
+    }
+
+    function updateScore() {
+      let percent = totalAttempted > 0 ? ((totalCorrect/totalAttempted)*100).toFixed(1) : 0;
+      document.getElementById('score').textContent = 
+        `Score: ${totalCorrect} correct out of ${totalAttempted} (${percent}%)`;
+    }
+
+    function saveScore() {
+      const name = document.getElementById('studentName').value.trim();
+      if (!name) {
+        alert("Enter your name first!");
+        return;
+      }
+      let percent = totalAttempted > 0 ? ((totalCorrect/totalAttempted)*100).toFixed(1) : 0;
+      const timestamp = new Date().toLocaleString();
+      classData.push({ name, correct: totalCorrect, total: totalAttempted, percent, timestamp });
+
+      let table = document.getElementById('resultsTable');
+      let row = table.insertRow();
+      row.insertCell(0).textContent = name;
+      row.insertCell(1).textContent = totalCorrect;
+      row.insertCell(2).textContent = totalAttempted;
+      row.insertCell(3).textContent = percent + "%";
+      row.insertCell(4).textContent = timestamp;
+    }
+
+    function resetScore() {
+      totalAttempted = 0;
+      totalCorrect = 0;
+      updateScore();
+      document.getElementById('feedback').textContent = "";
+    }
+
+    function downloadCSV() {
+      let csv = "Name,Correct,Total,Percent,Timestamp\n";
+      classData.forEach(r => {
+        csv += `${r.name},${r.correct},${r.total},${r.percent},${r.timestamp}\n`;
+      });
+      let blob = new Blob([csv], { type: "text/csv" });
+      let link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "class_results.csv";
+      link.click();
+    }
+
+    function drawSegment(svg) {
+      svg.innerHTML = `
+        <line x1="40" y1="60" x2="260" y2="60" stroke="black" stroke-width="2"/>
+        <circle cx="40" cy="60" r="4" fill="red"/><text x="30" y="50">A</text>
+        <circle cx="150" cy="60" r="4" fill="red"/><text x="145" y="50">B</text>
+        <circle cx="260" cy="60" r="4" fill="red"/><text x="265" y="50">C</text>
+      `;
+    }
+
+    function drawAngle(svg) {
+      svg.innerHTML = `
+        <line x1="150" y1="120" x2="150" y2="40" stroke="black" stroke-width="2"/>
+        <line x1="150" y1="120" x2="90" y2="80" stroke="black" stroke-width="2"/>
+        <line x1="150" y1="120" x2="220" y2="80" stroke="black" stroke-width="2"/>
+        <circle cx="150" cy="120" r="4" fill="red"/>
+        <text x="155" y="135">B</text>
+      `;
+    }
+
+    newProblem();
+  </script>
+</body>
+</html>
